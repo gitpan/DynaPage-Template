@@ -1,0 +1,17 @@
+
+<# komentar templatu - nebude viditelny ve vyslednem textu #>
+
+<html>
+<meta name="[:directValueModifiedForInclusionAsHtmlParameter:]">
+<=subTemplatePart=>
+<:directValueHtmlPart:>
+</html>
+
+
+0. posli cely template do plugxTemplateBody
+1. najdi vsechny SubTemplate tagy <=...=> 
+2. kdyz nalezeno: plugxIncludeTags( \@includeTags ) &&  feedIncludeTags()
+3. najdi vsechny ValueTagy [:...:] a <:...:> 
+4. kdyz nalezeno: plugxValueTags( \@valueTags ) && feedValueTags()
+5. kdyz byly zmeny, jdi na 0.
+6. plugxFinalBody()

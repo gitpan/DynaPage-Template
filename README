@@ -1,0 +1,55 @@
+NAME
+
+    DynaPage::Template - Dynamic Page document content
+
+     #------------------------------------------------------
+     # (C) Daniel Peder & Infoset s.r.o., all rights reserved
+     # http://www.infoset.com, Daniel.Peder@infoset.com
+     #------------------------------------------------------
+
+     $Revision: 1.3 $
+     $Date: 2005/01/13 21:31:07 $
+
+METHODS
+
+    new ( [ $template ] , [ $objectSourcer ] ) : DynaPage::Template::
+    Sourcer ( blessed ) : blessed
+        Set/Get the Sourcer object. Used to retrieve (Get) feedable values.
+        Sourcer must provide Get($name) method.
+
+    template ( $template ) : string
+        Set/Get the template's source.
+
+    result ( $result ) : string
+        Set/Get the template's result string.
+
+        Internaly used to set it, however, externaly should be used to GET
+        it ONLY.
+
+    Feed ( [ $Sourcer ] , [$keep_unfilled_tags] ) : string
+        Feed the whole template. Unless $keep_unfilled_tags is specified,
+        unfilled tags are cleared after last iteration. Current limit is 10
+        iterations.
+
+        Specifying $Sourcer forces another data source. See
+        DynaPage::Sourcer .
+
+    feedTags ( ) : bool
+        Find and replace value tags. There are two tag types. substituting
+        raw values [~TagName~] or [X]HTML parameter safe values [!TagName!].
+
+        Parameter safe values means substituted entities: &quot; &lt; &gt;
+        and &#39;
+
+    clearTags ( $clear_value ) : bool
+        Clear unfilled tags, resp. fill it with $clear_value , which is by
+        default set to '';
+
+        Return TRUE if some tags were cleared. Otherwise return FALSE.
+
+    getTagValue ( $name [, $parameterSafe ] ) : string
+        Get value of tag $name. The value will be escaped to be
+        $parameterSafe.
+
+TODO
+

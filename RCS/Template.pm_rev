@@ -1,0 +1,366 @@
+head	1.2;
+access;
+symbols;
+locks
+	root:1.2; strict;
+comment	@# @;
+
+
+1.2
+date	2004.11.08.01.55.16;	author root;	state Exp;
+branches;
+next	1.1;
+
+1.1
+date	2004.11.08.01.44.09;	author root;	state Exp;
+branches;
+next	;
+
+
+desc
+@DynaPage::Template
+@
+
+
+1.2
+log
+@*** empty log message ***
+@
+text
+@### //////////////////////////////////////////////////////////////////////////
+#
+#	TOP
+#
+
+=head1 NAME
+
+DynaPage::Template - Dynamic Page document content
+
+=cut
+
+#------------------------------------------------------
+# (C) Daniel Peder & Infoset s.r.o., all rights reserved
+# http://www.infoset.com, Daniel.Peder@@infoset.com
+#------------------------------------------------------
+
+###													###
+###	size of <TAB> in this document is 4 characters	###
+###													###
+
+### //////////////////////////////////////////////////////////////////////////
+#
+#	SECTION: package
+#
+
+    package DynaPage::Template;
+
+
+### //////////////////////////////////////////////////////////////////////////
+#
+#	SECTION: version
+#
+
+	use vars qw( $VERSION $VERSION_LABEL $REVISION $REVISION_DATETIME $REVISION_LABEL $PROG_LABEL );
+
+	$VERSION           = '0.10';
+	
+	$REVISION          = (qw$Revision: 1.1 $)[1];
+	$REVISION_DATETIME = join(' ',(qw$Date: 2004/11/08 01:44:09 $)[1,2]);
+	$REVISION_LABEL    = '$Id: Template.pm_rev 1.1 2004/11/08 01:44:09 root Exp root $';
+	$VERSION_LABEL     = "$VERSION (rev. $REVISION $REVISION_DATETIME)";
+	$PROG_LABEL        = __PACKAGE__." - ver. $VERSION_LABEL";
+
+=pod
+
+ $Revision: 1.1 $
+ $Date: 2004/11/08 01:44:09 $
+
+=cut
+
+
+### //////////////////////////////////////////////////////////////////////////
+#
+#	SECTION: debug
+#
+
+	use vars qw( $DEBUG ); $DEBUG=0;
+	
+
+### //////////////////////////////////////////////////////////////////////////
+#
+#	SECTION: constants
+#
+
+	# use constant	name		=> 'value';
+	
+
+### //////////////////////////////////////////////////////////////////////////
+#
+#	SECTION: modules use
+#
+
+	require 5.005_62;
+
+	use strict                  ;
+	use warnings                ;
+	
+
+### //////////////////////////////////////////////////////////////////////////
+#
+#	SECTION: class properties
+#
+
+	our	$config	= 
+	{
+	};
+	
+
+### //////////////////////////////////////////////////////////////////////////
+#
+#	SECTION: methods
+#
+
+=head1 METHODS
+
+=over 4
+
+=cut
+
+
+
+### ##########################################################################
+
+=item	new ( [ $body ] ) : DynaPage::Template::
+
+=cut
+
+### --------------------------------------------------------------------------
+sub		new
+### --------------------------------------------------------------------------
+{
+	my( $proto, $source ) = @@_;
+	
+	my	$self  = {};
+		bless( $self, (ref( $proto ) || $proto ));
+		$self->source( $source );
+	
+	$self
+}
+
+### ##########################################################################
+
+=item	source ( $source ) : string
+
+Set/Get the template's source.
+
+=cut
+
+### --------------------------------------------------------------------------
+sub		source
+### --------------------------------------------------------------------------
+{
+	my( $self, $source ) = @@_;
+    $self->{SOURCE} = $source if defined $source;
+    $self->{SOURCE}
+}
+
+
+### ##########################################################################
+
+=item	result ( $result ) : string
+
+Set/Get the template's result string.
+
+Internaly used to set it, however, externaly should be used 
+to GET it ONLY.
+
+=cut
+
+### --------------------------------------------------------------------------
+sub		result
+### --------------------------------------------------------------------------
+{
+	my( $self, $result ) = @@_;
+    $self->{RESULT} = $result if defined $result;
+    $self->{RESULT}
+}
+
+
+### ##########################################################################
+
+=item	Feed ( ) : bool
+
+Feed the whole template.
+
+=cut
+
+### --------------------------------------------------------------------------
+sub		Feed
+### --------------------------------------------------------------------------
+{
+	my( $self ) = @@_;
+	
+	my	$maxCount	= 10;
+	my(	$tags, $repl );
+	do {
+		( $tags, $repl ) = $self->feedTags();
+	} while $tags && $repl && --$maxCount;
+    
+}
+
+### ##########################################################################
+
+=item	feedTags ( ) : bool
+
+Find and replace value tags. There are two tag types.
+substituting raw values [~TagName~] or parameter safe values [!TagName!].
+
+Parameter safe values means substituted entities: &quot; &lt; &gt; and &#39;
+
+=cut
+
+### --------------------------------------------------------------------------
+sub		feedTags
+### --------------------------------------------------------------------------
+{
+	my( $self ) = @@_;
+	
+	my	$regex	= qr{\[([~!])([\w\-\.]+)\1\]}s;
+	my	$val	= $self->{VALUES};
+	my	$body	= $self->result() || $self->source();
+	my	$tagsCount	= 0;
+	my	$replCount	= 0;
+
+    while( $body =~ m{$regex}cgos )
+    {
+    		$tagsCount++;
+    	my	$matchLength	= length( $& );
+    	my	$matchPos		= pos( $body ) - $matchLength;
+    	my	$tagType	= $1;
+    	my	$tagName	= $2; 
+    	my	$parameterSafe	= ($tagType eq '!');
+    	my	$tagValue	= $self->getTagValue( $tagName, $parameterSafe );
+			next unless defined $tagValue;
+			$replCount++;
+	        substr( $body, $matchPos, $matchLength ) = $tagValue;
+    	    pos( $body ) = $matchPos + length( $tagValue );
+    }
+
+	$self->result( $body );
+
+	return $tagsCount, $replCount;
+}
+
+### ##########################################################################
+
+=item	setTagValue ( $name, $value ) : string
+
+Setting tag value to B<undef> value leaves its original 
+tag unreplaced, not cleared.
+
+=cut
+
+### --------------------------------------------------------------------------
+sub		setTagValue
+### --------------------------------------------------------------------------
+{
+	my( $self, $name, $value ) = @@_;
+	
+	if( defined $value )
+	{
+		$self->{TAG}{$name}	= $value
+	}
+	elsif( exists $self->{TAG}{$name} )
+	{
+		delete $self->{TAG}{$name}
+	}
+}
+
+### ##########################################################################
+
+=item	getTagValue ( $name [, $parameterSafe ] ) : string
+
+Get value of tag B<$name>. The value will be 
+escaped to be B<$parameterSafe>.
+
+=cut
+
+### --------------------------------------------------------------------------
+sub		getTagValue
+### --------------------------------------------------------------------------
+{
+	my( $self, $name, $parameterSafe ) = @@_;
+	
+	return undef unless exists $self->{TAG}{$name};
+
+	my	$value = $self->{TAG}{$name};
+	
+	if( defined $value && $parameterSafe )
+	{
+		$value	=~ s{'}{&#39;}gos;
+		$value	=~ s{"}{&quot;}gos;
+		$value	=~ s{<}{&lt;}gos;
+		$value	=~ s{>}{&gt;}gos;
+	}
+
+	return $value
+}
+
+=back
+
+=cut
+
+
+1;
+
+__DATA__
+
+__END__
+
+### //////////////////////////////////////////////////////////////////////////
+#
+#	SECTION: TODO
+#
+
+
+=head1 TODO	
+
+
+=cut
+@
+
+
+1.1
+log
+@Initial revision
+@
+text
+@d38 3
+a40 3
+	$REVISION          = (qw$Revision: 1.5 $)[1];
+	$REVISION_DATETIME = join(' ',(qw$Date: 2004/10/21 17:35:39 $)[1,2]);
+	$REVISION_LABEL    = '$Id: DynaPage::Template.pm_rev 1.5 2004/10/21 17:35:39 root Exp root $';
+d46 2
+a47 2
+ $Revision: 1.5 $
+ $Date: 2004/10/21 17:35:39 $
+d125 1
+a125 1
+Set the template's source.
+d143 4
+a146 1
+Set the template's result.
+d162 1
+a162 1
+=item	feed ( ) : bool
+d169 1
+a169 1
+sub		feed
+d187 3
+a189 1
+RawValued <:TagName:> and ParameterEscaped [:TagName:].
+d229 3
+d254 1
+a254 1
+Get value of tag B<$name>. The value could be 
+@

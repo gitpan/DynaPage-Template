@@ -1,0 +1,22 @@
+#!/usr/bin/perl -w
+
+	use strict;
+	use warnings;
+	use Data::Dump qw(pp);
+	use	DynaPage::Template;
+	use	DynaPage::Sourcer;
+	
+	print "START\n";
+	
+	my	$s		= new DynaPage::Sourcer();
+		$s->Set( 'tag1'		=> '[!value1!]');
+		$s->Set( 'tag2'		=> 'value2');
+		$s->Set( 'value1'	=> '<value3>');
+
+	my	$template		= qx( cat template1.txt );
+	my	$t 		= new DynaPage::Template( $template, $s );	
+		$t->Feed();
+
+	print "PARSED\n";
+	
+	print $t->{RESULT}

@@ -1,0 +1,31 @@
+
+# jednoradkovy text, bile znaky jsou minimalizovany 
+# (prvni/posledni pryc, ostatni zjednoduseny)
+
+x = ahoj
+
+# jednoradkovy text, vsechny bile znaky jsou zachovany
+# 
+
+x =~        mezery   zustanou   jak byly   
+
+# viceradkovy text -> jednoradkovy text
+
+jmeno ==<
+
+Toto je viceradkovy 
+text ze ktereho se 
+stane jednoradkovy text
+
+>== jmeno
+
+# viceradkovy text se zachovanym formatovanim bilych znaku
+# CR?LF tesne za ==~ a tesne pred ~== je zahozen
+
+jmeno ==~
+
+	Odstavec
+	zustane 
+	odstavcem
+
+~== jmeno

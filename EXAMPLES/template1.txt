@@ -1,0 +1,8 @@
+
+<# komentar templatu - nebude viditelny ve vyslednem textu #>
+
+<html>
+<meta name="[!tag1!]">
+[~tag2~]
+</html>
+
